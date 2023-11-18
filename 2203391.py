@@ -215,13 +215,13 @@ def animateButton(button, colour):
     time.sleep(0.1)
     button[0].setFill("black")
 
-def selectionMode(win, objects):
+def selectionMode(win, slected, objects):
     pass
     
 def run(win, size):
     
     close = False
-    #enter selection mode by default
+    selected = selectionMode(win, [])
     while not close:
         #get key 
         #if key = s
@@ -229,16 +229,30 @@ def run(win, size):
         #d = deselect
         #p = penultimate
         #f = final
-        # q= plaine
-        # valid colour initials = change colour to colour
-        # x = have fun
-        # else do none  
+        #q = plane
+        #valid colour initials = change colour to colour
+        #x = have fun
+        #else do none
+        #constantly check for mouse and key inputs
         mouse = win.checkMouse()
         key = win.checkKey()
         if mouse:
             print(mouse)
         if key:
             print(key)
+        
+        if key == "s":
+            selected = selectionMode(win, )
+        if key == "d":
+            print("deselecting")
+        if key == "p":
+            print("changing to tile")
+        if key == "f":
+            print("chaning to corner")
+        if key == "q":
+            print("chaning to plane")
+        
+
         """
         buttons = drawButtons(win, size)
         changePattern(win, )
