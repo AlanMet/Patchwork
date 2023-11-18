@@ -1,20 +1,19 @@
 from graphics import * 
 
 def drawPatchwork(win, coords, patterns, colours):
+    objects = []
     for x in range(0, len(coords)):
         colour = colours[x]
         coord = coords[x]
         pattern = patterns[x]
-        print(coord)
         if pattern is None:
-            drawBox(win, Point(coord[0], coord[1]), Point(coord[0]+100, coord[1]+100), colour)
+            objects.append(drawBox(win, Point(coord[0], coord[1]), Point(coord[0]+100, coord[1]+100), colour))
         elif pattern == "corner":
-            drawCorner(win, coord, colour)
+            objects.append(drawCorner(win, coord, colour))
         else:
-            drawTile(win, coord, colour)
+            objects.append(drawTile(win, coord, colour))
 
-        win.getMouse()
-
+    return objects
 
 #draws corner patch and returns all objetcs for later use
 def drawCorner(win, point, colour):
@@ -37,38 +36,30 @@ def drawTile(win, point, colour):
             middle = Point(point[0]+(x*20)+10, point[1]+(y*20)+10)
             if y%2==0:
                 if x%2==0:
-                    drawArrowsDown(win, middle, colour)
+                    objects.append(drawArrows(win, middle, colour, "down"))
                 else:
-                    drawCircle(win, middle, 10, colour)
+                    objects.append(drawCircle(win, middle, 10, colour))
             else:
                 if x%2==0:
-                    drawCircle(win, middle, 10, colour)
+                    objects.append(drawCircle(win, middle, 10, colour))
                 else:
-                    drawArrowsRight(win, middle, colour)
+                    objects.append(drawArrows(win, middle, colour, "right"))
     return objects
 
-def drawArrowsRight(win, middle, colour):
+def drawArrows(win, middle, colour, direction):
     objects = []
     topLeft = Point(middle.getX()-10, middle.getY()-10)
-    bottomLeft = Point(middle.getX()-10, middle.getY()+10)
-    Triangle1 = Polygon(middle, topLeft, bottomLeft)
+    if direction == "down":
+        point2 = Point(middle.getX()+10, middle.getY()-10)
+    if direction == "right":
+        point2 = Point(middle.getX()-10, middle.getY()+10)
+    Triangle1 = Polygon(middle, topLeft, point2)
     Triangle1.setFill(colour)
     Triangle2 = Triangle1.clone()
-    Triangle2.move(10, 0)
-    Triangle1.draw(win)
-    Triangle2.draw(win)
-    objects.append(Triangle1)
-    objects.append(Triangle2)
-    return objects 
-
-def drawArrowsDown(win, middle, colour):
-    objects = []
-    topLeft = Point(middle.getX()-10, middle.getY()-10)
-    topRight = Point(middle.getX()+10, middle.getY()-10)
-    Triangle1 = Polygon(middle, topLeft, topRight)
-    Triangle1.setFill(colour)
-    Triangle2 = Triangle1.clone()
-    Triangle2.move(0, 10)
+    if direction == "right":
+        Triangle2.move(10, 0)
+    else:
+        Triangle2.move(0, 10)
     Triangle1.draw(win)
     Triangle2.draw(win)
     objects.append(Triangle1)
@@ -87,6 +78,12 @@ def drawBox(win, point1, point2, colour):
     box.setFill(colour)
     box.draw(win)
     return box
+
+def drawText(win, point, text, colour):
+    text = Text(point, text)
+    text.setFill(colour)
+    text.draw(win)
+    return text
 
 #returns all top left coords in order
 def getCoord(size):
@@ -145,7 +142,7 @@ def getSizeColour(sizes, colours):
     size = 0
     choices = []
     while size not in sizes:
-        size = input("Please enter a patchwork size: ")
+        size = input("Please enter a patchwork size (5 or 7 or 9): ")
         if isInteger(size):
             size = int(size)
         else:
@@ -161,21 +158,82 @@ def getSizeColour(sizes, colours):
                 print("This is not a valid colour. Try again.")
             else:
                 choices.append(colour)
-                
-                
     return size, choices
+
+def drawButton(win, point1, point2, text, boxcolour, Textcolour):
+    objects = []
+    objects.append(drawBox(win, point1, point2, boxcolour))
+    objects.append(drawText(win, Point((point2.getX()+point1.getX())/2, (point2.getY()+point1.getY())/2), text, Textcolour))
+    return objects
+
+def drawButtons(win, size):
+    objects = []
+    objects.append(drawButton(win,  Point(0, 0), Point(30, 30), "OK", "black", "white"))
+    objects.append(drawButton(win,  Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white"))
+    return objects 
+    
+
+def buttonClicked(point, buttons):
+    #method and float error <= 
+    for button in buttons:
+        p1 = button[0].getP1()
+        p2 = button[0].getP2()
+        if (p1.getX()<=point.getX()<=p2.getX()) and (p1.getY()<=point.getY()<=p2.getY()):
+            return button
+    return None
+
+#recursive algorithm
+def hideObjects(objects):
+    #print(objects)
+    for x in objects:
+        if type(x) is list:
+            hideObjects(x)
+        else:
+            x.undraw()
+
+def changePattern(point, pattern, newPattern, size):
+    coords = getCoord(size)
+    Xpoint = point.getX()
+    Ypoint = point.getY()
+    for x in range(0, len(coords)):
+        if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
+            pattern[x] = newPattern
+
+    return pattern
+
+def swapPatch(win, size, point, objects):
+    pass
+
+def animateButton(button, colour):
+    button[0].setFill(colour)
+    time.sleep(0.1)
+    button[0].setFill("black")
+    
+def run(win, size):
+    buttons = drawButtons(win, size)
+    close = False 
+    while not close:
+        mouse = win.getMouse()
+        button = buttonClicked(mouse, buttons)
+        if button is not None:
+            animateButton(button, "grey")
+            #button[1] is the text object
+            if button[1].getText() == "CLOSE":
+                close = True
+            if button[1].getText() == "OK":
+                hideObjects(button)
 
 def main():
     sizes = [5, 7, 9]
-    colours = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
-    patterns = ["tile", "corner"]
     #size, choices = getSizeColour(sizes, colours)
-    #getColour(5, ["blue", "orange", "red"])
-    #getPattern(5)
-    win = createWin("Patchwork", 900)
-    #drawTile(win, [0, 0], "red")
-    drawPatchwork(win, getCoord(9), getPattern(9), getColour(9, ["blue", "orange", "red"]))
-    win.getMouse()
-
-
+    size = 5
+    choices = ["red", "blue", "green"]
+    win = createWin("Patchwork", size*100)
+    pattern = getPattern(size)
+    coordinates = getCoord(size)
+    colours = getColour(size, choices)
+    drawPatchwork(win, coordinates, pattern, colours)
+    run(win, size)
+    
+                
 main()
