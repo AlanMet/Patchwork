@@ -12,8 +12,14 @@ def drawPatchwork(win, coords, patterns, colours):
             objects.append(drawCorner(win, coord, colour))
         else:
             objects.append(drawTile(win, coord, colour))
-
     return objects
+
+def drawOutline(win, point, colour):
+    square = Rectangle(point, Point(point.getX()+100, point.getY()+100))
+    square.setOutline(colour)
+    square.setWidth(2)
+    square.draw(win)
+    return square
 
 #draws corner patch and returns all objetcs for later use
 def drawCorner(win, point, colour):
@@ -88,12 +94,7 @@ def drawText(win, point, text, colour):
 #returns all top left coords in order
 def getCoord(size):
     coords = []
-    for y in range(size):
-        for x in range(size):
-            coord = []
-            coord.append(x*100)
-            coord.append(y*100)
-            coords.append(coord)
+    [coords.append([x*100, y*100]) for x in range(size) for y in range(size)]
     return coords
 
 #returns pattern name based on top left coord
@@ -183,7 +184,7 @@ def buttonClicked(point, buttons):
     return None
 
 #recursive algorithm
-def hideObjects(objects):
+def hideObjects(win, objects):
     #print(objects)
     for x in objects:
         if type(x) is list:
@@ -191,14 +192,19 @@ def hideObjects(objects):
         else:
             x.undraw()
 
-def changePattern(point, pattern, newPattern, size):
+#https://stackoverflow.com/questions/45517677/graphics-py-how-to-clear-the-window
+def clear(win):
+    for item in win.items[:]:
+        item.undraw()
+    win.update()
+
+def changePattern(win, point, pattern, newPattern, size):
     coords = getCoord(size)
     Xpoint = point.getX()
     Ypoint = point.getY()
     for x in range(0, len(coords)):
         if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
             pattern[x] = newPattern
-
     return pattern
 
 def swapPatch(win, size, point, objects):
@@ -208,12 +214,34 @@ def animateButton(button, colour):
     button[0].setFill(colour)
     time.sleep(0.1)
     button[0].setFill("black")
+
+def selectionMode(win, objects):
+    pass
     
 def run(win, size):
-    buttons = drawButtons(win, size)
-    close = False 
+    
+    close = False
+    #enter selection mode by default
     while not close:
-        mouse = win.getMouse()
+        #get key 
+        #if key = s
+        #selection
+        #d = deselect
+        #p = penultimate
+        #f = final
+        # q= plaine
+        # valid colour initials = change colour to colour
+        # x = have fun
+        # else do none  
+        mouse = win.checkMouse()
+        key = win.checkKey()
+        if mouse:
+            print(mouse)
+        if key:
+            print(key)
+        """
+        buttons = drawButtons(win, size)
+        changePattern(win, )
         button = buttonClicked(mouse, buttons)
         if button is not None:
             animateButton(button, "grey")
@@ -221,7 +249,7 @@ def run(win, size):
             if button[1].getText() == "CLOSE":
                 close = True
             if button[1].getText() == "OK":
-                hideObjects(button)
+                hideObjects(button)"""
 
 def main():
     sizes = [5, 7, 9]
@@ -233,7 +261,7 @@ def main():
     coordinates = getCoord(size)
     colours = getColour(size, choices)
     drawPatchwork(win, coordinates, pattern, colours)
-    run(win, size)
-    
+    run(win, 5)
+    win.getMouse()
                 
 main()
