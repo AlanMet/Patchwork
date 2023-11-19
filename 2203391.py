@@ -132,7 +132,6 @@ def getColour(size, choices):
                     colours.append(choices[0])
     return colours
 
-
 def createWin(name, size):
     return GraphWin(name, size, size, autoflush=False)
 
@@ -154,7 +153,6 @@ def drawButtons(win, size):
     objects.append(drawButton(win,  Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white"))
     return objects 
     
-
 def buttonClicked(point, buttons):
     #method and float error <= 
     for button in buttons:
@@ -163,15 +161,6 @@ def buttonClicked(point, buttons):
         if (p1.getX()<=point.getX()<=p2.getX()) and (p1.getY()<=point.getY()<=p2.getY()):
             return button
     return None
-
-#recursive algorithm
-def hideObjects(win, objects):
-    #print(objects)
-    for x in objects:
-        if type(x) is list:
-            hideObjects(x)
-        else:
-            x.undraw()
 
 #https://stackoverflow.com/questions/45517677/graphics-py-how-to-clear-the-window
 def clear(win):
@@ -215,7 +204,9 @@ def randomChange(win, coordinates, pattern, colours, size):
         drawPatchwork(win, coordinates, pattern, colours)
 
     
-def getSizeColour(sizes, colours):
+def getSizeColour():
+    sizes = [5, 7, 9]
+    colours = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
     size = 0
     choices = []
     while size not in sizes:
@@ -237,36 +228,72 @@ def getSizeColour(sizes, colours):
                 choices.append(colour)
     return size, choices
 
-def run(win, size):
-    
+def getPatchIndex(mouse, size):
+    coordinates = getCoord(size)
+    pointX = mouse.getX()
+    pointY = mouse.getY()
+    for i in range(0, len(coordinates)):
+        x = coordinates[i][0]
+        y = coordinates[i][1]
+        if x<=pointX<=x+99 and y<=pointY<=y+99:
+            return i
+
+
+def selectionMode(win, size, patchCoords, outlines):
+    buttons = []
+    ok = drawButton(win, Point(0, 0), Point(30, 30), "OK", "black", "white")
+    close = drawButton(win, Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white")
+    buttons.append(ok)
+    buttons.append(close)
+    coordinates = getCoord(size)
+    point = Point(size*50, size*50)
+    closeClicked = False
+    while not buttonClicked(point, buttons):
+        point = win.getMouse()
+        index = getPatchIndex(point, size)
+        if coordinates[index] in patchCoords:
+            for x in range(0, len(patchCoords)):
+                if patchCoords[x] == coordinates[index]:
+                    del patchCoords[x]
+                    outlines[x].undraw()
+                    del outlines[x]
+                    break
+        else:
+            patchCoords.append(coordinates[index])
+            outlines.append(drawOutline(win, Point(patchCoords[-1][0], patchCoords[-1][1]), "black"))
+
+    [x.undraw() for x in ok]
+    win.update()
+    return 
+
+def editMode(win, size, pattern, colours):
     close = False
-    #selected = selectionMode(win, [])
+    patchCoords=[]
+    outlines=[]
+    selectionMode(win, size, patchCoords, outlines)
+    close = drawButton(win, Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white")
     while not close:
-        #get key 
-        #if key = s
-        #selection
-        #d = deselect
-        #p = penultimate
-        #f = final
-        #q = plane
-        #valid colour initials = change colour to colour
-        #x = have fun
-        #else do none
-        #constantly check for mouse and key inputs
         mouse = win.checkMouse()
         key = win.checkKey()
-        if mouse:
-            print(mouse)
-        if key:
-            print(key)
-        
+        if buttonClicked(mouse, button):
+            print("clicked")
+            close = True
         if key == "s":
-            pass
-            #selected = selectionMode(win, )
+            selectionMode(win, size, patchCoords, outlines)
         if key == "d":
-            print("deselecting")
+            patchCoords = []
+            [x.undraw() for x in outlines]
+            win.update()
         if key == "p":
-            print("changing to tile")
+            print("tile")
+            clear(win)
+            for i in patchCoords:
+                point = Point(i[0], i[1])
+                changePattern(point, pattern, "tile", size)
+            drawPatchwork(win, getCoord(size), pattern, colours)
+            [x.draw(win) for x in outlines]
+            close.draw()
+            win.update()
         if key == "f":
             print("chaning to corner")
         if key == "q":
@@ -275,7 +302,7 @@ def run(win, size):
 
         """
         buttons = drawButtons(win, size)
-        changePattern(win, )
+        changePattern(win)
         button = buttonClicked(mouse, buttons)
         if button is not None:
             animateButton(button, "grey")
@@ -286,18 +313,15 @@ def run(win, size):
                 hideObjects(button)"""
 
 def main():
-    sizes = [5, 7, 9]
-    #size, choices = getSizeColour(sizes, colours)
     size = 5
     choices = ["red", "blue", "green"]
+
     win = createWin("Patchwork", size*100)
     pattern = getPattern(size)
     coordinates = getCoord(size)
     colours = getColour(size, choices)
     drawPatchwork(win, coordinates, pattern, colours)
-    win.getMouse()
-    randomChange(win, coordinates, pattern, colours, size)
-    run(win, 5)
+    editMode(win, size, pattern, colours)
     win.getMouse()
                 
 main()
