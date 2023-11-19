@@ -290,7 +290,6 @@ def editMode(win, size, pattern, colours):
                 [x.undraw() for x in outlines]
                 win.update()
             if key == "p":
-                print("tile")
                 clear(win)
                 for i in patchCoords:
                     point = Point(i[0], i[1])
@@ -300,7 +299,6 @@ def editMode(win, size, pattern, colours):
                 [x.draw(win) for x in buttons[1]]
                 win.update()
             if key == "f":
-                print("chaning to corner")
                 clear(win)
                 for i in patchCoords:
                     point = Point(i[0], i[1])
@@ -310,7 +308,6 @@ def editMode(win, size, pattern, colours):
                 [x.draw(win) for x in buttons[1]]
                 win.update()
             if key == "q":
-                print("chaning to plane")
                 clear(win)
                 for i in patchCoords:
                     point = Point(i[0], i[1])
@@ -388,9 +385,7 @@ def editMode(win, size, pattern, colours):
                 [x.draw(win) for x in outlines]
                 [x.draw(win) for x in buttons[1]]
 def main():
-    size = 5
-    choices = ["red", "blue", "green"]
-
+    size, choices = getSizeColour()
     win = createWin("Patchwork", size*100)
     pattern = getPattern(size)
     coordinates = getCoord(size)
