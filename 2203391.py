@@ -1,4 +1,5 @@
 from graphics import * 
+import random
 
 def drawPatchwork(win, coords, patterns, colours):
     objects = []
@@ -12,6 +13,8 @@ def drawPatchwork(win, coords, patterns, colours):
             objects.append(drawCorner(win, coord, colour))
         else:
             objects.append(drawTile(win, coord, colour))
+
+    win.update()
     return objects
 
 def drawOutline(win, point, colour):
@@ -94,7 +97,7 @@ def drawText(win, point, text, colour):
 #returns all top left coords in order
 def getCoord(size):
     coords = []
-    [coords.append([x*100, y*100]) for x in range(size) for y in range(size)]
+    [coords.append([x*100, y*100]) for y in range(size) for x in range(size)]
     return coords
 
 #returns pattern name based on top left coord
@@ -131,35 +134,13 @@ def getColour(size, choices):
 
 
 def createWin(name, size):
-    return GraphWin(name, size, size)
+    return GraphWin(name, size, size, autoflush=False)
 
 def isInteger(num):
     for x in num:
         if not x.isdigit():
             return False
     return True
-            
-def getSizeColour(sizes, colours):
-    size = 0
-    choices = []
-    while size not in sizes:
-        size = input("Please enter a patchwork size (5 or 7 or 9): ")
-        if isInteger(size):
-            size = int(size)
-        else:
-            print("Please enter a valid size.")
-            size = 0
-
-    for x in range(1, 4):
-        colour = ""
-        while colour not in colours:
-            colour = input("Please enter a colour ")
-            colour.lower()
-            if colour not in colours:
-                print("This is not a valid colour. Try again.")
-            else:
-                choices.append(colour)
-    return size, choices
 
 def drawButton(win, point1, point2, text, boxcolour, Textcolour):
     objects = []
@@ -198,17 +179,22 @@ def clear(win):
         item.undraw()
     win.update()
 
-def changePattern(win, point, pattern, newPattern, size):
+#no need to return pattern as the objects gets referenced through the function
+def changePattern(point, pattern, patternName, size):
     coords = getCoord(size)
     Xpoint = point.getX()
     Ypoint = point.getY()
     for x in range(0, len(coords)):
         if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
-            pattern[x] = newPattern
-    return pattern
+            pattern[x] = patternName
 
-def swapPatch(win, size, point, objects):
-    pass
+def changeColour(point, colours, colourName, size):
+    coords = getCoord(size)
+    Xpoint = point.getX()
+    Ypoint = point.getY()
+    for x in range(0, len(coords)):
+        if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
+            colours[x] = colourName
 
 def animateButton(button, colour):
     button[0].setFill(colour)
@@ -217,11 +203,46 @@ def animateButton(button, colour):
 
 def selectionMode(win, slected, objects):
     pass
+
+def randomChange(win, coordinates, pattern, colours, size):
+    patterns = ["tile", "corner", None]
+    colourChoices = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
+    while True:
+        clear(win)
+        for _ in range(0, random.randint(0, 10)):
+            point = Point(random.choice(coordinates)[0], random.choice(coordinates)[1])
+            changePattern(point, pattern, random.choice(patterns), size)
+            changeColour(point, colours, random.choice(colourChoices), size)
+        drawPatchwork(win, coordinates, pattern, colours)
+        time.sleep(0.5)
+
     
+def getSizeColour(sizes, colours):
+    size = 0
+    choices = []
+    while size not in sizes:
+        size = input("Please enter a patchwork size (5 or 7 or 9): ")
+        if isInteger(size):
+            size = int(size)
+        else:
+            print("Please enter a valid size.")
+            size = 0
+
+    for x in range(1, 4):
+        colour = ""
+        while colour not in colours:
+            colour = input("Please enter a colour ")
+            colour.lower()
+            if colour not in colours:
+                print("This is not a valid colour. Try again.")
+            else:
+                choices.append(colour)
+    return size, choices
+
 def run(win, size):
     
     close = False
-    selected = selectionMode(win, [])
+    #selected = selectionMode(win, [])
     while not close:
         #get key 
         #if key = s
@@ -242,7 +263,8 @@ def run(win, size):
             print(key)
         
         if key == "s":
-            selected = selectionMode(win, )
+            pass
+            #selected = selectionMode(win, )
         if key == "d":
             print("deselecting")
         if key == "p":
@@ -275,6 +297,8 @@ def main():
     coordinates = getCoord(size)
     colours = getColour(size, choices)
     drawPatchwork(win, coordinates, pattern, colours)
+    win.getMouse()
+    randomChange(win, coordinates, pattern, colours, size)
     run(win, 5)
     win.getMouse()
                 
