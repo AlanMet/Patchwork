@@ -177,7 +177,6 @@ def hideObjects(win, objects):
 def clear(win):
     for item in win.items[:]:
         item.undraw()
-    win.update()
 
 #no need to return pattern as the objects gets referenced through the function
 def changePattern(point, pattern, patternName, size):
