@@ -195,13 +195,12 @@ def selectionMode(win, slected, objects):
 def randomChange(win, coordinates, pattern, colours, size):
     patterns = ["tile", "corner", None]
     colourChoices = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
-    while True:
-        clear(win)
-        for _ in range(0, random.randint(0, 10)):
-            point = Point(random.choice(coordinates)[0], random.choice(coordinates)[1])
-            changePattern(point, pattern, random.choice(patterns), size)
-            changeColour(point, colours, random.choice(colourChoices), size)
-        drawPatchwork(win, coordinates, pattern, colours)
+    clear(win)
+    for _ in range(0, random.randint(0, 10)):
+        point = Point(random.choice(coordinates)[0], random.choice(coordinates)[1])
+        changePattern(point, pattern, random.choice(patterns), size)
+        changeColour(point, colours, random.choice(colourChoices), size)
+    drawPatchwork(win, coordinates, pattern, colours)
 
     
 def getSizeColour():
@@ -240,78 +239,154 @@ def getPatchIndex(mouse, size):
 
 
 def selectionMode(win, size, patchCoords, outlines):
-    buttons = []
-    ok = drawButton(win, Point(0, 0), Point(30, 30), "OK", "black", "white")
-    close = drawButton(win, Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white")
-    buttons.append(ok)
-    buttons.append(close)
     coordinates = getCoord(size)
     point = Point(size*50, size*50)
-    closeClicked = False
-    while not buttonClicked(point, buttons):
+    buttons = drawButtons(win, size)
+    while True:
         point = win.getMouse()
-        index = getPatchIndex(point, size)
-        if coordinates[index] in patchCoords:
-            for x in range(0, len(patchCoords)):
-                if patchCoords[x] == coordinates[index]:
-                    del patchCoords[x]
-                    outlines[x].undraw()
-                    del outlines[x]
-                    break
+        button = buttonClicked(point, buttons)
+        if button is not None:
+            animateButton(button, "grey")
+            if button[1].getText() == "CLOSE":
+                win.close()
+            if button[1].getText() == "OK":
+                [x.undraw() for x in buttons[0]]
+                win.update()
+                return buttons
         else:
-            patchCoords.append(coordinates[index])
-            outlines.append(drawOutline(win, Point(patchCoords[-1][0], patchCoords[-1][1]), "black"))
-
-    [x.undraw() for x in ok]
-    win.update()
-    return 
+            index = getPatchIndex(point, size)
+            if coordinates[index] in patchCoords:
+                for x in range(0, len(patchCoords)):
+                    if patchCoords[x] == coordinates[index]:
+                        del patchCoords[x]
+                        outlines[x].undraw()
+                        del outlines[x]
+                        break
+            else:
+                patchCoords.append(coordinates[index])
+                outlines.append(drawOutline(win, Point(patchCoords[-1][0], patchCoords[-1][1]), "black"))
 
 def editMode(win, size, pattern, colours):
     close = False
     patchCoords=[]
     outlines=[]
-    selectionMode(win, size, patchCoords, outlines)
-    close = drawButton(win, Point((size*100)-60, 0), Point(size*100, 30), "CLOSE", "black", "white")
-    while not close:
-        mouse = win.checkMouse()
+    buttons = selectionMode(win, size, patchCoords, outlines)
+
+    while True:
+        point = win.checkMouse()
         key = win.checkKey()
-        if buttonClicked(mouse, button):
-            print("clicked")
-            close = True
-        if key == "s":
-            selectionMode(win, size, patchCoords, outlines)
-        if key == "d":
-            patchCoords = []
-            [x.undraw() for x in outlines]
-            win.update()
-        if key == "p":
-            print("tile")
-            clear(win)
-            for i in patchCoords:
-                point = Point(i[0], i[1])
-                changePattern(point, pattern, "tile", size)
-            drawPatchwork(win, getCoord(size), pattern, colours)
-            [x.draw(win) for x in outlines]
-            close.draw()
-            win.update()
-        if key == "f":
-            print("chaning to corner")
-        if key == "q":
-            print("chaning to plane")
-        
-
-        """
-        buttons = drawButtons(win, size)
-        changePattern(win)
-        button = buttonClicked(mouse, buttons)
-        if button is not None:
-            animateButton(button, "grey")
-            #button[1] is the text object
-            if button[1].getText() == "CLOSE":
-                close = True
-            if button[1].getText() == "OK":
-                hideObjects(button)"""
-
+        if point is not None:
+            button = buttonClicked(point, buttons)
+            if button is not None:
+                animateButton(button, "grey")
+                if button[1].getText() == "CLOSE":
+                    win.close()
+                    return
+        elif key is not None:
+            if key == "s":
+                buttons = selectionMode(win, size, patchCoords, outlines)
+            if key == "d":
+                patchCoords = []
+                [x.undraw() for x in outlines]
+                win.update()
+            if key == "p":
+                print("tile")
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changePattern(point, pattern, "tile", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "f":
+                print("chaning to corner")
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changePattern(point, pattern, "corner", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "q":
+                print("chaning to plane")
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changePattern(point, pattern, None, size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+#colours = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
+            if key == "r":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "red", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "g":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "green", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "b":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "blue", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "m":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "magenta", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "o":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "orange", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "y":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "yellow", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "c":
+                clear(win)
+                for i in patchCoords:
+                    point = Point(i[0], i[1])
+                    changeColour(point, colours, "cyan", size)
+                drawPatchwork(win, getCoord(size), pattern, colours)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
+                win.update()
+            if key == "x":
+                randomChange(win, getCoord(size), pattern, colours, size)
+                [x.draw(win) for x in outlines]
+                [x.draw(win) for x in buttons[1]]
 def main():
     size = 5
     choices = ["red", "blue", "green"]
@@ -322,6 +397,5 @@ def main():
     colours = getColour(size, choices)
     drawPatchwork(win, coordinates, pattern, colours)
     editMode(win, size, pattern, colours)
-    win.getMouse()
                 
 main()
