@@ -213,7 +213,6 @@ def randomChange(win, coordinates, pattern, colours, size):
             changePattern(point, pattern, random.choice(patterns), size)
             changeColour(point, colours, random.choice(colourChoices), size)
         drawPatchwork(win, coordinates, pattern, colours)
-        time.sleep(0.5)
 
     
 def getSizeColour(sizes, colours):
