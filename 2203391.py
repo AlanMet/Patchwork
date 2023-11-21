@@ -7,12 +7,12 @@ def drawPatchwork(win, coords, patterns, colours):
         colour = colours[x]
         coord = coords[x]
         pattern = patterns[x]
-        if pattern is None:
-            objects.append(drawBox(win, Point(coord[0], coord[1]), Point(coord[0]+100, coord[1]+100), colour))
+        if pattern == "tile":
+            objects.append(drawTile(win, coord, colour))
         elif pattern == "corner":
             objects.append(drawCorner(win, coord, colour))
         else:
-            objects.append(drawTile(win, coord, colour))
+            objects.append(drawBox(win, Point(coord[0], coord[1]), Point(coord[0]+100, coord[1]+100), colour))
 
     win.update()
     return objects
@@ -184,10 +184,12 @@ def changeColour(point, colours, colourName, size):
         if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
             colours[x] = colourName
 
-def animateButton(button, colour):
+def animateButton(win, button, colour):
     button[0].setFill(colour)
+    win.update()
     time.sleep(0.1)
     button[0].setFill("black")
+    win.update()
 
 def selectionMode(win, slected, objects):
     pass
@@ -246,7 +248,7 @@ def selectionMode(win, size, patchCoords, outlines):
         point = win.getMouse()
         button = buttonClicked(point, buttons)
         if button is not None:
-            animateButton(button, "grey")
+            animateButton(win, button, "grey")
             if button[1].getText() == "CLOSE":
                 win.close()
             if button[1].getText() == "OK":
@@ -266,6 +268,28 @@ def selectionMode(win, size, patchCoords, outlines):
                 patchCoords.append(coordinates[index])
                 outlines.append(drawOutline(win, Point(patchCoords[-1][0], patchCoords[-1][1]), "black"))
 
+
+def changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, colour):
+    clear(win)
+    for i in patchCoords:
+        point = Point(i[0], i[1])
+        changeColour(point, colours, colour, size)
+    drawPatchwork(win, getCoord(size), pattern, colours)
+    [x.draw(win) for x in outlines]
+    [x.draw(win) for x in buttons[1]]
+    win.update()
+
+def changeTilepattern(win, patchCoords, colours, pattern, size, outlines, buttons, patternName):
+    clear(win)
+    for i in patchCoords:
+        point = Point(i[0], i[1])
+        changePattern(point, pattern, patternName, size)
+    drawPatchwork(win, getCoord(size), pattern, colours)
+    [x.draw(win) for x in outlines]
+    [x.draw(win) for x in buttons[1]]
+    win.update()
+
+
 def editMode(win, size, pattern, colours):
     close = False
     patchCoords=[]
@@ -278,11 +302,11 @@ def editMode(win, size, pattern, colours):
         if point is not None:
             button = buttonClicked(point, buttons)
             if button is not None:
-                animateButton(button, "grey")
+                animateButton(win, button, "grey")
                 if button[1].getText() == "CLOSE":
                     win.close()
                     return
-        elif key is not None:
+        if key is not None:
             if key == "s":
                 buttons = selectionMode(win, size, patchCoords, outlines)
             if key == "d":
@@ -290,96 +314,25 @@ def editMode(win, size, pattern, colours):
                 [x.undraw() for x in outlines]
                 win.update()
             if key == "p":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changePattern(point, pattern, "tile", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTilepattern(win, patchCoords, colours, pattern, size, outlines, buttons, "tile")
             if key == "f":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changePattern(point, pattern, "corner", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTilepattern(win, patchCoords, colours, pattern, size, outlines, buttons, "corner")
             if key == "q":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changePattern(point, pattern, None, size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
-#colours = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
+                changeTilepattern(win, patchCoords, colours, pattern, size, outlines, buttons, None)
             if key == "r":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "red", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "red")
             if key == "g":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "green", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "green")
             if key == "b":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "blue", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "blue")
             if key == "m":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "magenta", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "magenta")
             if key == "o":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "orange", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "orange")
             if key == "y":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "yellow", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "yellow")
             if key == "c":
-                clear(win)
-                for i in patchCoords:
-                    point = Point(i[0], i[1])
-                    changeColour(point, colours, "cyan", size)
-                drawPatchwork(win, getCoord(size), pattern, colours)
-                [x.draw(win) for x in outlines]
-                [x.draw(win) for x in buttons[1]]
-                win.update()
+                changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, "cyan")
             if key == "x":
                 randomChange(win, getCoord(size), pattern, colours, size)
                 [x.draw(win) for x in outlines]
