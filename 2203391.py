@@ -20,7 +20,7 @@ def drawPatchwork(win, coords, patterns, colours):
 def drawOutline(win, point, colour):
     square = Rectangle(point, Point(point.getX()+100, point.getY()+100))
     square.setOutline(colour)
-    square.setWidth(2)
+    square.setWidth(4)
     square.draw(win)
     return square
 
@@ -295,7 +295,6 @@ def editMode(win, size, pattern, colours):
     patchCoords=[]
     outlines=[]
     buttons = selectionMode(win, size, patchCoords, outlines)
-
     while True:
         point = win.checkMouse()
         key = win.checkKey()
