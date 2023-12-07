@@ -312,6 +312,8 @@ def editMode(win, size, pattern, colours):
                 patchCoords = []
                 [x.undraw() for x in outlines]
                 win.update()
+                #fixes issue where unselected outlines would be drawn as the object still existed in the outlines list
+                outlines = []
             if key == "p":
                 changeTilepattern(win, patchCoords, colours, pattern, size, outlines, buttons, "tile")
             if key == "f":
