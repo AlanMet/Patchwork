@@ -55,6 +55,7 @@ def drawTile(win, point, colour):
                     objects.append(drawArrows(win, middle, colour, "right"))
     return objects
 
+#as efficient as i could get it but i might be stupid 
 def drawArrows(win, middle, colour, direction):
     objects = []
     topLeft = Point(middle.getX()-10, middle.getY()-10)
@@ -176,23 +177,24 @@ def changePattern(point, pattern, patternName, size):
         if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
             pattern[x] = patternName
 
+#change the colour at specific index 
 def changeColour(point, colours, colourName, size):
     coords = getCoord(size)
     Xpoint = point.getX()
     Ypoint = point.getY()
+    #maybe use get index...
     for x in range(0, len(coords)):
         if coords[x][0]<=Xpoint<=coords[x][0]+99 and coords[x][1]<=Ypoint<=coords[x][1]+99:
             colours[x] = colourName
 
+#animates the buttons
 def animateButton(win, button, colour):
     button[0].setFill(colour)
     win.update()
     time.sleep(0.1)
     button[0].setFill("black")
     win.update()
-
-def selectionMode(win, slected, objects):
-    pass
+    time.sleep(0.1)
 
 def randomChange(win, coordinates, pattern, colours, size):
     patterns = ["tile", "corner", None]
@@ -204,7 +206,8 @@ def randomChange(win, coordinates, pattern, colours, size):
         changeColour(point, colours, random.choice(colourChoices), size)
     drawPatchwork(win, coordinates, pattern, colours)
 
-    
+
+#get the inputs from user
 def getSizeColour():
     sizes = [5, 7, 9]
     colours = ["red", "green", "blue", "magenta", "orange", "yellow", "cyan"]
@@ -218,6 +221,7 @@ def getSizeColour():
             print("Please enter a valid size.")
             size = 0
 
+    #asks for 3 colours
     for x in range(1, 4):
         colour = ""
         while colour not in colours:
@@ -229,6 +233,7 @@ def getSizeColour():
                 choices.append(colour)
     return size, choices
 
+#gets index of patch within the array
 def getPatchIndex(mouse, size):
     coordinates = getCoord(size)
     pointX = mouse.getX()
@@ -267,7 +272,6 @@ def selectionMode(win, size, patchCoords, outlines):
             else:
                 patchCoords.append(coordinates[index])
                 outlines.append(drawOutline(win, Point(patchCoords[-1][0], patchCoords[-1][1]), "black"))
-
 
 def changeTileColour(win, patchCoords, colours, pattern, size, outlines, buttons, colour):
     clear(win)
