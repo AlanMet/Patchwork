@@ -1,4 +1,6 @@
 # Patchwork pattern generator
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/46257260-da43-4d05-9372-0edae6619d5b" />
+
 This project is a graphical patchwork pattern generator buit using John Zelle's Graphics library. The program allows users to create, edit and customise tiles with various patterns and colours through a graphical user interface.
 ## Features
 - Pattern Generation:
